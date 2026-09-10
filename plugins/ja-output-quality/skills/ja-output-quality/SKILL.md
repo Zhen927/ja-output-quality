@@ -47,7 +47,7 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 |---|---|---|---|
 | ① ルールの再注入 | SessionStart フック | セッションの開始・再開・/clear・compact のたび | なし（`assets/global-rules.md` をそのまま注入） |
 | ② 書き込み前の門番 | PreToolUse のプロンプト型フック | .md／.txt を Write／Edit する直前 | Haiku（プロンプト型フックの既定。速く、安く、書き手と別のモデル） |
-| ③ 完成時のレビュー | このスキルの review（観点A・B・C） | 文書を書き終えたとき | 観点A・B は Sonnet 5（内容の判断）、観点C は Haiku（読んで引っかかるか） |
+| ③ 完成時のレビュー | このスキルの review（観点A・B・C） | 文書を書き終えたとき | Haiku 4.5（quick は effort medium、full は effort max） |
 | 補 ターン終了時の判定 | Stop のプロンプト型フック | 最終回答に200字以上の日本語があるとき | Haiku |
 | 補 生成した文書の本文チェック | PostToolUse のコマンド型フック（`scripts/office_text.py`） | Bash で .pptx／.xlsx／.docx を作った直後 | なし（本文を抜き出して `ja_lint.py` にかける） |
 
@@ -55,7 +55,7 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 ②は違反があると書き込み自体を拒否し、理由を書き手に返す。書き手は同じターン内で直して書き直す。同じ編集が3回続けて拒否されたら止まってユーザーに相談する。判定不能やタイムアウトのときは素通し（fail open）にして、文章チェックのために作業が止まらないようにする。迷ったら指摘する（見逃しより過検知を許容する）。
 
-**モデルの決まり（必須）**：レビューや判定のサブエージェントは、セッションのモデルを引き継がない。同梱のレビュー担当は frontmatter でモデルと effort を固定してあるので、これを `subagent_type` に指定して起動する。名前はプラグイン版が `ja-output-quality:reviewer`、`ja-output-quality:check-sentences`、`check-evidence`、`check-wording`、`install-local.sh` で入れた版が `ja-output-quality-reviewer`、`ja-output-quality-check-sentences`、`ja-output-quality-check-evidence`、`ja-output-quality-check-wording`。利用できるエージェントの一覧にあるほうを使う。同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "sonnet"`（読みやすさの判定は `"haiku"`）を明示し、`references/review-protocol.md` のプロンプトを渡す。モデルを指定せずに起動しない。書き手（親）はセッションのモデルのままでよい。
+**モデルの決まり（必須）**：レビューや判定のサブエージェントは、セッションのモデルを引き継がない。同梱のレビュー担当は frontmatter でモデルと effort を固定してあるので、これを `subagent_type` に指定して起動する。名前はプラグイン版が `ja-output-quality:reviewer`、`ja-output-quality:check-sentences`、`check-evidence`、`check-wording`、`install-local.sh` で入れた版が `ja-output-quality-reviewer`、`ja-output-quality-check-sentences`、`ja-output-quality-check-evidence`、`ja-output-quality-check-wording`。利用できるエージェントの一覧にあるほうを使う。同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "haiku"` を明示し、`references/review-protocol.md` のプロンプトを渡す。モデルを指定せずに起動しない。書き手（親）はセッションのモデルのままでよい。
 
 書き終えた文章のレビュー（③）の要点は次のとおり。プロンプトと出力形式は `references/review-protocol.md`。
 
@@ -90,8 +90,8 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 ## 3. 実行モード
 
-- **quick（既定）**：機械チェック ＋ reviewer 1体（観点A・B・C をまとめて担当、Sonnet 5）＋ 1回。チャットの回答、メール、社内メモ向け。追加の時間は1〜2分。
-- **full**：機械チェック ＋ `ja-output-quality:check-sentences` `check-evidence` `check-wording` を並列で3体（Sonnet 5）＋ 2回（2回目も新しいエージェントを起動する）。顧客に渡す資料、経営層向け、社外文書、1万字を超える文書向け。始める前に、かかる時間の目安（5〜15分）をユーザーに一言伝える。
+- **quick（既定）**：機械チェック ＋ reviewer 1体（観点A・B・C をまとめて担当、Haiku 4.5、effort medium）＋ 1回。チャットの回答、メール、社内メモ向け。追加の時間は1〜2分。
+- **full**：機械チェック ＋ check-sentences、check-evidence、check-wording の並列3体（いずれも Haiku 4.5、effort max）＋ 2回（2回目も新しいエージェントを起動する）。顧客に渡す資料、経営層向け、社外文書、1万字を超える文書向け。始める前に、かかる時間の目安（5〜15分）をユーザーに一言伝える。
 - 迷ったら quick で仕上げ、「full で磨き直すこともできる」と添える。full と決めたら、短い文書でも手順を省かない。
 
 呼び出し例：`/ja-output-quality full review 回答案.md`、`/ja-output-quality write 顧客向けの回答を作る`（write は1章のルールで書き、書き終えたら自動で review に進む）。
@@ -108,7 +108,7 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 - **書かせる前に論点を整理する。** 読みにくい文章の多くは、文面ではなく内容が整理されていないことから来る。顧客への回答や提案は、書く前に grill-me で前提と論点を詰め、customer-qa-style の Step 1〜3（論点の分解、事実確認）を終えてから書く。
 - **一次情報を引用させる。** 公式ドキュメントの該当箇所、検証環境の実測値、社内の過去案件の記録など「そこにしかない事実」を引用して書かせる。推測で埋めた文が減るほど読みやすくなり、誤りも減る。
-- **Advisor を使う。** Claude Code の `/advisor sonnet` を有効にすると、本体とは別のモデルが相談役として回答前にレビューする。
+- **Advisor を使う。** Claude Code の `/advisor` は、本体より能力の高いモデルを相談役に指定したときだけ動く。本体が Fable 5.1 のときは使えないので、本体を Sonnet 5 にして `/advisor fable` か `/advisor opus` とする使い方になる。
 - **ルールの常時適用**。プラグイン版は SessionStart フックで `assets/global-rules.md` を自動注入する。claude.ai（Cowork、Web セッションの zip 版）にはフックがないので、同じ内容を個人設定（プロフィール、プロジェクトの指示）に貼る。
 - **体裁スキルとの併用**。各体裁スキルの末尾に併用の一文を足す。文面は `assets/integration.md`。customer-qa-style の Step 5 セルフチェックは、観点B に渡すチェックリストとして残し、判定はサブエージェントに移す。
 

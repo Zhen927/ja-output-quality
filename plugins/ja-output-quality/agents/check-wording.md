@@ -1,8 +1,8 @@
 ---
 name: check-wording
-description: ja-output-quality の full モード用。観点C（表記と言葉遣い）。語彙と構文の直訳、直訳の造語、硬い漢語やくだけた語、顧客向け敬語、文字種と記号の判定と直し方の指示だけを返す。読んで引っかかるかを判定するので、書き手と別の軽いモデル（Haiku 4.5）で動く。
+description: ja-output-quality の full モード用。観点C（表記と言葉遣い）。語彙と構文の直訳、直訳の造語、硬い漢語やくだけた語、顧客向け敬語、文字種と記号の判定と直し方の指示だけを返す。Haiku 4.5、effort max。
 model: claude-haiku-4-5-20251001
-effort: high
+effort: max
 tools: Read
 maxTurns: 8
 ---

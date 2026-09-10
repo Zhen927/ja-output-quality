@@ -1,7 +1,7 @@
 ---
 name: check-sentences
-description: ja-output-quality の full モード用。観点A（文の要否と構成）。一文ごとの役割表、予防線・作業報告の混入・説明過多・文体の癖・飾り・同じ型の繰り返し、文書全体の重複・接続の乱れ・構成の崩れの判定と直し方の指示だけを返す。Sonnet 5、effort max。
-model: claude-sonnet-5
+description: ja-output-quality の full モード用。観点A（文の要否と構成）。一文ごとの役割表、予防線・作業報告の混入・説明過多・文体の癖・飾り・同じ型の繰り返し、文書全体の重複・接続の乱れ・構成の崩れの判定と直し方の指示だけを返す。Haiku 4.5、effort max。
+model: claude-haiku-4-5-20251001
 effort: max
 tools: Read
 maxTurns: 8

@@ -1,8 +1,8 @@
 ---
 name: reviewer
-description: ja-output-quality の quick モード用レビュー担当。日本語文書を観点A（文の要否と構成）、観点B（根拠）、観点C（表記と言葉遣い）の三つでまとめて判定し、判定と直し方の指示だけを返す。書き直しはしない。Sonnet 5、effort max で動き、セッションのモデルを引き継がない。
-model: claude-sonnet-5
-effort: max
+description: ja-output-quality の quick モード用レビュー担当。日本語文書を観点A（文の要否と構成）、観点B（根拠）、観点C（表記と言葉遣い）の三つでまとめて判定し、判定と直し方の指示だけを返す。書き直しはしない。Haiku 4.5、effort medium で動き、セッションのモデルを引き継がない。
+model: claude-haiku-4-5-20251001
+effort: medium
 tools: Read
 maxTurns: 8
 ---

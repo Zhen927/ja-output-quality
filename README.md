@@ -14,7 +14,7 @@ Claude Code の中で次の二つを実行する。
 導入すると次が有効になる。
 
 - スキル `/ja-output-quality:ja-output-quality`（書く前のルール、完成時のレビュー）
-- レビュー担当のサブエージェント4体（Sonnet 5 と Haiku 4.5 に固定。セッションのモデルを引き継がない）
+- レビュー担当のサブエージェント4体（Haiku 4.5 に固定。quick は effort medium、full は max。セッションのモデルを引き継がない）
 - フック4種（セッション開始時にルールを再注入、.md／.txt／.html の書き込み前に Haiku が検査して違反なら拒否、Bash で作った .pptx／.xlsx／.docx の本文を抜き出して機械チェック、ターン終了時に最終回答の日本語を判定）
 
 スキルは `/ja-output-quality:ja-output-quality` として呼べる。日本語の顧客向け文書やレポートを書く依頼では、コマンドを打たなくても description の条件で自動的に読み込まれる。

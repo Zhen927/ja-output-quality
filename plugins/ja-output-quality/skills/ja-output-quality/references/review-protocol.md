@@ -9,9 +9,9 @@
 
 ## レビュー担当の起動とモデル
 
-- 同梱のエージェントを `subagent_type` に指定して起動する。quick は reviewer（観点A・B・C をまとめて担当、Sonnet 5）、full は check-sentences（観点A、Sonnet 5）、check-evidence（観点B、Sonnet 5）、check-wording（観点C、Haiku 4.5）を並列で。名前はプラグイン版が `ja-output-quality:reviewer` のようにコロン区切り、`install-local.sh` で入れた版が `ja-output-quality-reviewer` のようにハイフン区切り。いずれも frontmatter でモデルと effort を固定してあり、セッションのモデルを引き継がない。
-- 観点C だけ Haiku にしているのは、判定するのが「読んで引っかかるか」であって内容の正しさではないから。書き手と同じ系統の強いモデルは自分の直訳調を見過ごすので、別の弱いモデルのほうが検出できる。速くて安いことも理由。
-- 同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "sonnet"`（観点C は `"haiku"`）を明示し、このファイルの各観点のプロンプトをそのまま渡す。モデルを指定せずに起動しない。
+- 同梱のエージェントを `subagent_type` に指定して起動する。quick は reviewer（観点A・B・C をまとめて担当、Haiku 4.5、effort medium）、full は check-sentences（観点A）、check-evidence（観点B）、check-wording（観点C）を並列で（いずれも Haiku 4.5、effort max）。名前はプラグイン版が `ja-output-quality:reviewer` のようにコロン区切り、`install-local.sh` で入れた版が `ja-output-quality-reviewer` のようにハイフン区切り。いずれも frontmatter でモデルと effort を固定してあり、セッションのモデルを引き継がない。
+- レビュー担当を Haiku にしているのは、判定するのが「読んで引っかかるか」「根拠が書いてあるか」であって、内容を新しく考える仕事ではないから。書き手と同じ系統の強いモデルは自分の直訳調を見過ごすので、別の弱いモデルのほうが検出できる。速くて安いことも理由。full は effort を max にして見落としを減らす。
+- 同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "haiku"` を明示し、このファイルの各観点のプロンプトをそのまま渡す。モデルを指定せずに起動しない。
 - このファイルの観点ごとのプロンプトと `agents/*.md` の本文は同じ内容である。片方を直したらもう片方も直す。書き込み前の門番とターン終了時の判定のプロンプトは `hooks/hooks.json` にある。
 - 書き手（親）はセッションのモデルのままでよい。安くしたいのはレビューの側で、執筆と最終判断は書き手が行う。
 

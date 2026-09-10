@@ -1,7 +1,7 @@
 ---
 name: check-evidence
-description: ja-output-quality の full モード用。観点B（根拠）。確度の種類と書き方、根拠の所在、一般化しすぎ、断定とぼかしの釣り合い、条件のない「できる」の判定と直し方の指示だけを返す。Sonnet 5、effort max。
-model: claude-sonnet-5
+description: ja-output-quality の full モード用。観点B（根拠）。確度の種類と書き方、根拠の所在、一般化しすぎ、断定とぼかしの釣り合い、条件のない「できる」の判定と直し方の指示だけを返す。Haiku 4.5、effort max。
+model: claude-haiku-4-5-20251001
 effort: max
 tools: Read
 maxTurns: 8
