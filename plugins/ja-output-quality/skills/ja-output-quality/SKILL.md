@@ -55,7 +55,7 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 ②は違反があると書き込み自体を拒否し、理由を書き手に返す。書き手は同じターン内で直して書き直す。同じ編集が3回続けて拒否されたら止まってユーザーに相談する。判定不能やタイムアウトのときは素通し（fail open）にして、文章チェックのために作業が止まらないようにする。迷ったら指摘する（見逃しより過検知を許容する）。
 
-**モデルの決まり（必須）**：レビューや判定のサブエージェントは、セッションのモデルを引き継がない。同梱のレビュー担当（`ja-output-quality:reviewer`、`ja-output-quality:check-sentences`、`check-evidence`、`check-wording`）は frontmatter でモデルと effort を固定してあるので、これを `subagent_type` に指定して起動する。同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "sonnet"`（読みやすさの判定は `"haiku"`）を明示し、`references/review-protocol.md` のプロンプトを渡す。モデルを指定せずに起動しない。書き手（親）はセッションのモデルのままでよい。
+**モデルの決まり（必須）**：レビューや判定のサブエージェントは、セッションのモデルを引き継がない。同梱のレビュー担当は frontmatter でモデルと effort を固定してあるので、これを `subagent_type` に指定して起動する。名前はプラグイン版が `ja-output-quality:reviewer`、`ja-output-quality:check-sentences`、`check-evidence`、`check-wording`、`install-local.sh` で入れた版が `ja-output-quality-reviewer`、`ja-output-quality-check-sentences`、`ja-output-quality-check-evidence`、`ja-output-quality-check-wording`。利用できるエージェントの一覧にあるほうを使う。同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "sonnet"`（読みやすさの判定は `"haiku"`）を明示し、`references/review-protocol.md` のプロンプトを渡す。モデルを指定せずに起動しない。書き手（親）はセッションのモデルのままでよい。
 
 書き終えた文章のレビュー（③）の要点は次のとおり。プロンプトと出力形式は `references/review-protocol.md`。
 
@@ -90,7 +90,7 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 ## 3. 実行モード
 
-- **quick（既定）**：機械チェック ＋ `ja-output-quality:reviewer` 1体（観点A・B・C をまとめて担当、Sonnet 5）＋ 1回。チャットの回答、メール、社内メモ向け。追加の時間は1〜2分。
+- **quick（既定）**：機械チェック ＋ reviewer 1体（観点A・B・C をまとめて担当、Sonnet 5）＋ 1回。チャットの回答、メール、社内メモ向け。追加の時間は1〜2分。
 - **full**：機械チェック ＋ `ja-output-quality:check-sentences` `check-evidence` `check-wording` を並列で3体（Sonnet 5）＋ 2回（2回目も新しいエージェントを起動する）。顧客に渡す資料、経営層向け、社外文書、1万字を超える文書向け。始める前に、かかる時間の目安（5〜15分）をユーザーに一言伝える。
 - 迷ったら quick で仕上げ、「full で磨き直すこともできる」と添える。full と決めたら、短い文書でも手順を省かない。
 

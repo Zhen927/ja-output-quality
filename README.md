@@ -21,7 +21,22 @@ Claude Code の中で次の二つを実行する。
 
 `/skills` で一覧に出ているか確認できる。出ていなければ `/reload-plugins`。
 
-## 更新
+## VS Code 拡張・ターミナル・デスクトップで共通に使う（プラグインを使わない入れ方）
+
+VS Code の Claude Code 拡張は、ターミナル版やデスクトップ版と同じ `~/.claude` を読む。プラグインをユーザー単位で入れてあれば VS Code でもそのまま使える（Claude Code のパネルで `/plugin list` か `/skills` で確認）。
+
+マーケットプレイスの登録がうまくいかない環境や、プラグインを使いたくない環境では、次の二行で `~/.claude` に直接入れる。スキル、レビュー担当のエージェント4体、フック4種がまとめて入り、VS Code、ターミナル、デスクトップのすべてで使える。Windows は Git Bash で実行する。
+
+```bash
+git clone https://github.com/Zhen927/ja-output-quality.git ~/ja-output-quality
+bash ~/ja-output-quality/install-local.sh
+```
+
+更新は `git -C ~/ja-output-quality pull && bash ~/ja-output-quality/install-local.sh`。外すときは `bash ~/ja-output-quality/install-local.sh --remove`。入れたあとは新しいセッションを開き、`/skills` に `ja-output-quality` が出ることを確認する。この入れ方ではスキル名は `/ja-output-quality`、レビュー担当は `ja-output-quality-reviewer` のようにハイフン区切りになる。
+
+`~/.claude/settings.json` の hooks には、既存の項目を残したまま追記する。python3 か python がない環境では hooks だけ手で追記する（スクリプトが案内を出す）。
+
+## 更新（プラグイン版）
 
 リポジトリに push すれば新しい版になる（version を宣言していないので、コミットが進めば更新扱い）。各 PC では次のどちらか。
 
@@ -35,10 +50,6 @@ Claude Code の中で次の二つを実行する。
 ## claude.ai（Web・アプリ）側
 
 claude.ai のスキル設定にアップロードしたものは、claude.ai のチャットと Web 版 Claude Code（クラウドセッション）で使われる。ローカルの Claude Code とは同期されないため、ローカルは上のプラグイン導入で入れる。リポジトリを更新したときは、`plugins/ja-output-quality/skills/ja-output-quality/` を zip にして claude.ai 側も再アップロードする。
-
-## プラグインを使わない場合
-
-`plugins/ja-output-quality/skills/ja-output-quality/` を `~/.claude/skills/ja-output-quality/` にコピーしても動く。ただし更新は手で取り直すことになる。
 
 ## 中身
 
