@@ -34,8 +34,8 @@ ja-output-quality/
 ## 使い方
 
 ```
-/ja-output-quality full review 回答案.md      # 顧客向け。観点A/B/C を並列 + 2回
-/ja-output-quality quick review メール.md      # 社内、日常。レビュー担当1体 + 1回
+/ja-output-quality full review 回答案.md      # 顧客向け。観点A/B/C を並列（Haiku、effort max）+ 1回
+/ja-output-quality quick review メール.md      # 社内、日常。レビュー担当1体（Haiku、effort medium）+ 1回
 /ja-output-quality write 顧客向けの回答を作る    # ルールで書き、書き終えたら自動で review
 python3 scripts/ja_lint.py 文書.md [--json] [--customer] [--baseline prev.json]
 python3 scripts/office_text.py 提案書.pptx --lint --customer        # PowerPoint／Excel／Word の本文を抜き出して機械チェック
