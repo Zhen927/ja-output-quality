@@ -51,7 +51,8 @@
 ## プラグインに同梱しているフック（`hooks/hooks.json`）
 
 - **SessionStart**（startup、resume、clear、compact）: `assets/global-rules.md` をそのまま注入する。
-- **PreToolUse**（.md／.txt への Write／Edit）: プロンプト型フック（Haiku）が書き込む内容を検査し、違反があれば書き込みを拒否して理由を返す。書き手は同じターンで直して書き直す。
+- **PreToolUse**（.md／.txt／.html への Write／Edit）: プロンプト型フック（Haiku）が書き込む内容を検査し、違反があれば書き込みを拒否して理由を返す。書き手は同じターンで直して書き直す。
+- **PostToolUse**（Bash）: コマンドに .pptx／.xlsx／.docx のパスが含まれ、そのファイルが直近20分以内に更新されていれば、本文を抜き出して `ja_lint.py` にかける。warn 以上があれば指摘を返す（exit 2）。python3 か python がない環境では何もしない。
 - **Stop**: 最終回答に200字以上の日本語があれば、直訳調と読みにくさを Haiku が判定し、不合格なら書き直させる。`stop_hook_active` が true のときは通すので、差し戻しは1回で止まる。
 
 止めたいときは、プラグインの `hooks/hooks.json` から該当する項目を消す（マーケットプレイスから入れた場合は `~/.claude/plugins/marketplaces/zhen927-skills/plugins/ja-output-quality/hooks/hooks.json`。更新で元に戻るので、恒久的に外すならリポジトリ側で消す）。

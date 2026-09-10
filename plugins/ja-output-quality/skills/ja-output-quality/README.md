@@ -15,13 +15,14 @@ ja-output-quality/
 │   └── integration.md            他スキルの SKILL.md に追記する文面、任意のフック設定
 └── scripts/
     ├── ja_lint.py                機械チェック（標準ライブラリだけ）。敬語、作業報告の混入、確信度、条件のない「できる」、文字種
+    ├── office_text.py            PowerPoint／Excel／Word から本文を抜き出して機械チェックにかける（標準ライブラリだけ）
     └── fixtures/                 動作確認用のサンプル3本
 ```
 
 プラグイン版には、次の二つが同梱されている。
 
 - `agents/`: レビュー担当4体（reviewer と check-sentences、check-evidence は Sonnet 5、check-wording は Haiku 4.5）。レビューはセッションのモデルを引き継がない。
-- `hooks/hooks.json`: 三つの仕組み。セッション開始時にルールを再注入する、.md／.txt の書き込み前に Haiku が検査して違反なら拒否する、ターン終了時に最終回答の日本語を Haiku が判定する。
+- `hooks/hooks.json`: 四つの仕組み。セッション開始時にルールを再注入する、.md／.txt／.html の書き込み前に Haiku が検査して違反なら拒否する、Bash で .pptx／.xlsx／.docx を作った直後に本文を抜き出して機械チェックにかける、ターン終了時に最終回答の日本語を Haiku が判定する。
 
 ## 導入
 
@@ -37,6 +38,7 @@ ja-output-quality/
 /ja-output-quality quick review メール.md      # 社内、日常。レビュー担当1体 + 1回
 /ja-output-quality write 顧客向けの回答を作る    # ルールで書き、書き終えたら自動で review
 python3 scripts/ja_lint.py 文書.md [--json] [--customer] [--baseline prev.json]
+python3 scripts/office_text.py 提案書.pptx --lint --customer        # PowerPoint／Excel／Word の本文を抜き出して機械チェック
 ```
 
 ## 動作確認
