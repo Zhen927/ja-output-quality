@@ -1,0 +1,7 @@
+{
+  "name": "ja-output-quality",
+  "description": "日本語出力の品質不変則と独立レビュー（出力憲法10条・Lane A/B/C レビュー・敬語と工程叙述の lint）",
+  "author": {
+    "name": "Zhen927"
+  }
+}
