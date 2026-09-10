@@ -1,6 +1,6 @@
 {
   "name": "ja-output-quality",
-  "description": "日本語出力の品質不変則と独立レビュー（出力憲法10条・Lane A/B/C レビュー・敬語と工程叙述の lint）",
+  "description": "日本語文書の共通品質ルールとレビュー（書く前のルール10か条、観点A/B/C のレビュー担当、敬語と作業報告の混入の lint）",
   "author": {
     "name": "Zhen927"
   }

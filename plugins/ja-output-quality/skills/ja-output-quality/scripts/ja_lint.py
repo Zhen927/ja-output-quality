@@ -10,9 +10,9 @@
     natural-japanese の lint.py と同じ JSON 形（findings: rule/severity/line/excerpt/detail）
     を返すので、判断台帳の扱いも同じでよい。常套句・翻訳調・体言止め率・段落構造・
     語彙多様性の深い検出は lint.py（uv + sudachi）に任せ、本スクリプトは lint.py に無い
-    (1) 顧客向け敬語、(2) 工程叙述・自己言及、(3) 語尾による確信度の均し、
-    (4) 制約のない「できる」・幅のない数値・標識のない未確認事項、(5) 字形・記号
-    を担当する。uv が使えない環境向けに常套句・翻訳調の最小集合も持つ。
+    (1) 顧客向け敬語、(2) 作業報告の混入・自己言及、(3) 語尾による確信度のぼかし、
+    (4) 条件のない「できる」・幅のない数値・ラベルのない未確認事項、(5) 文字種・記号
+    を担当する。uv が使えない環境向けに常套句・翻訳調の最小限の一覧も持つ。
 
 使い方:
     python3 ja_lint.py <file.md> [--json] [--baseline prev.json] [--customer]
@@ -203,7 +203,7 @@ def density_finding(doc: Doc, hits: list[tuple[int, str]], rule: str, info_at: f
 
 
 # ---------------------------------------------------------------------------
-# 規則: 表現・工程・確信度
+# 規則: 表現・作業報告・確信度
 # ---------------------------------------------------------------------------
 
 def rules_expression(doc: Doc) -> list[Finding]:
@@ -213,13 +213,13 @@ def rules_expression(doc: Doc) -> list[Finding]:
     f += find_phrases(doc, JA_PHRASES_INFO, "ai_phrase_ja", "info",
                       "頻度で効く常套句・翻訳調。1文書に数回なら自然", max_reports=25)
     f += find_phrases(doc, JA_STRONG, "strong_claim_ja", "info",
-                      "強い語。対応する証拠（仕様・実測・一次情報）があるか Lane B が確認する")
+                      "断定の言葉。見合う根拠（仕様・実測・一次情報）があるか観点B が確認する")
     f += find_phrases(doc, JA_PROCESS_WARN, "process_narration", "warn",
-                      "工程・自己言及の文。正文に入れてよいのは保証・観察・境界の3種だけ")
+                      "作業報告や自己言及の文。本文に書いてよいのは、何が保証されているか・何を確かめたか・どこまで当てはまるか、の三つだけ")
     f += find_phrases(doc, JA_PROCESS_INFO, "process_narration", "info",
-                      "工程の記述なら削除。事実の報告なら何をどう確認したか（根拠）を添える。表の状態ラベルなら残す")
+                      "作業報告なら削除。事実の報告なら、何をどう確認したか（根拠）を添える。表の状態ラベルなら残す")
     f += density_finding(doc, count_matches(doc, JA_HEDGE_ENDINGS), "hedge_ending_ja", 3, 6,
-                         "確信度を語尾で均している疑い。確認済みは断定、未確認は【要確認】、推定は根拠つきで")
+                         "語尾で確信度をぼかしている疑い。確認済みは言い切る。未確認は【要確認】。推測は根拠つきで")
     noms = count_matches(doc, [r"を(?:行|おこな)(?:う|い|っ|わ|え)", r"を実施(?:す|し)"])
     f += density_finding(doc, noms, "suru_nominalization_ja", 4, 8,
                          "「〜を行う」「〜を実施する」の名詞化。動詞で書く（分析を行う → 分析する）")
@@ -227,12 +227,12 @@ def rules_expression(doc: Doc) -> list[Finding]:
     if len(conc) >= 2:
         f.append(Finding("concessive_self_defense", "warn" if len(conc) >= 4 else "info", conc[0][0],
                          "、".join(f"L{l}" for l, _ in conc[:6]),
-                         f"譲歩してからぼかす型が{len(conc)}件。結果＋境界＋未検証範囲の三要素に置換する"))
+                         f"言い訳を前置きしてからぼかす型が{len(conc)}件。結果＋条件＋確認していない範囲の三つに置き換える"))
     return f
 
 
 # ---------------------------------------------------------------------------
-# 規則: 校准（制約のない「できる」・幅のない数値・標識のない未確認）
+# 規則: 根拠との釣り合い（条件のない「できる」・幅のない数値・ラベルのない未確認）
 # ---------------------------------------------------------------------------
 
 def rules_calibration(doc: Doc) -> list[Finding]:
@@ -245,7 +245,7 @@ def rules_calibration(doc: Doc) -> list[Finding]:
         sev = "warn" if len(bare_dekiru) >= 3 else "info"
         sample = "、".join(f"L{l}" for l, _ in bare_dekiru[:6])
         f.append(Finding("dekiru_without_condition", sev, bare_dekiru[0][0], sample,
-                         f"制約・条件が同じ文にも前後の行にもない「できる」が{len(bare_dekiru)}件。制約ゼロの『できる』は疑う（→ 設計上の含意まで書く）"))
+                         f"条件が同じ文にも前後の行にもない「できる」が{len(bare_dekiru)}件。条件のない『できる』は疑う（→ 設計上どうすべきかまで書く）"))
     bare_num = []
     for line_no, s in doc.sentences:
         if NUMBER_UNIT_RE.search(s) and not RANGE_RE.search(doc.context(line_no)):
@@ -260,12 +260,12 @@ def rules_calibration(doc: Doc) -> list[Finding]:
             unl.append((line_no, s))
     for line_no, s in unl[:6]:
         f.append(Finding("unlabeled_unverified", "info", line_no, excerpt_of(s),
-                         "未確認の内容に【要確認】の標識がない。確認方法（公式Doc／検証環境）もセットで書く"))
+                         "未確認の内容に【要確認】のラベルがない。確認方法（公式ドキュメント／検証環境）も添える"))
     return f
 
 
 # ---------------------------------------------------------------------------
-# 規則: 敬語・語域
+# 規則: 敬語・言葉遣い
 # ---------------------------------------------------------------------------
 
 def rules_register(doc: Doc, customer: bool) -> list[Finding]:
@@ -277,7 +277,7 @@ def rules_register(doc: Doc, customer: bool) -> list[Finding]:
     sasete = count_matches(doc, ["させていただ"])
     if doc.per_1000(len(sasete)) > 3 and len(sasete) >= 2:
         f.append(Finding("sasete_itadaku_overuse", sev, sasete[0][0], f"{len(sasete)}件",
-                         f"「させていただく」の密度 {doc.per_1000(len(sasete)):.1f}件/1000字。多くは「〜します」で足りる"))
+                         f"「させていただく」が {doc.per_1000(len(sasete)):.1f}件/1000字。多くは「〜します」で足りる"))
     f += find_phrases(doc, [r"[一-鿿゠-ヿー]になります(?![か])"], "ni_narimasu", "info",
                       "名詞＋「になります」。「〜です」で足りる（変化を表す場合は残す）", max_reports=8)
     f += find_phrases(doc, [r"のほう[をはがにも]"], "no_hou", "info", "「〜のほう」は不要", max_reports=8)
@@ -298,7 +298,7 @@ def rules_register(doc: Doc, customer: bool) -> list[Finding]:
 
 
 # ---------------------------------------------------------------------------
-# 規則: 構造・装飾・字形
+# 規則: 構造・装飾・文字種
 # ---------------------------------------------------------------------------
 
 def rules_structure(doc: Doc) -> list[Finding]:
@@ -318,19 +318,19 @@ def rules_structure(doc: Doc) -> list[Finding]:
         if cv < 0.28:
             f.append(Finding("uniform_sentence_length", "info", doc.sentences[0][0],
                              f"平均{statistics.mean(lengths):.0f}字、変動係数{cv:.2f}",
-                             "文長が揃いすぎ。短い文と長い文を混ぜる（生成の癖）"))
+                             "文の長さが揃いすぎ。短い文と長い文を混ぜる（生成のくせ）"))
     plens = [len(p) for _, p in doc.paragraphs if len(p) >= 20]
     if len(plens) >= 5:
         cv = statistics.pstdev(plens) / statistics.mean(plens)
         if cv < 0.25:
             f.append(Finding("uniform_paragraphs", "info", doc.paragraphs[0][0],
                              f"段落{len(plens)}本、変動係数{cv:.2f}",
-                             "段落の厚みが均一。重要な節を厚く、軽い節を薄く"))
+                             "段落の厚みがどこも同じ。大事な節を厚く、軽い節を薄く"))
     nonblank = [l for l in doc.lines if l.strip()]
     bullets = [l for l in nonblank if LIST_RE.match(l)]
     if len(nonblank) >= 15 and len(bullets) / len(nonblank) >= 0.6:
         f.append(Finding("bullet_dominant", "info", 1, f"{len(bullets)}/{len(nonblank)}行が箇条書き",
-                         "全篇が箇条書き。体裁スキル（customer-qa-style 等）がそれを規定するなら「残す/体裁上自然」"))
+                         "全体が箇条書き。体裁スキル（customer-qa-style など）がそう決めているなら「残す/体裁上自然」"))
     bold_total = 0
     for start, p in doc.paragraphs:
         n = len(BOLD_RE.findall(p))
@@ -339,10 +339,10 @@ def rules_structure(doc: Doc) -> list[Finding]:
             f.append(Finding("bold_per_paragraph", "info", start, f"太字{n}箇所", "太字は段落に核1箇所まで"))
     bold_total += sum(len(BOLD_RE.findall(l)) for l in doc.lines if LIST_RE.match(l))
     if bold_total > max(3, doc.chars / 150):
-        f.append(Finding("bold_overuse", "warn", 1, f"太字{bold_total}箇所／{doc.chars}字", "強調が均等に散って効いていない"))
+        f.append(Finding("bold_overuse", "warn", 1, f"太字{bold_total}箇所／{doc.chars}字", "強調が散らばって効いていない"))
     emo = [(i, EMOJI_RE.findall(l)) for i, l in enumerate(doc.lines, 1) if EMOJI_RE.search(l)]
     for i, chars in emo[:5]:
-        f.append(Finding("emoji", "info", i, "".join(chars[:5]), "絵文字は導航ラベル以外に使わない"))
+        f.append(Finding("emoji", "info", i, "".join(chars[:5]), "絵文字は区分のラベル以外に使わない"))
     excl = [i for i, l in enumerate(doc.lines, 1) if re.search(r"(?<![\w/])[!！](?![\[(=])", l)]
     if excl:
         f.append(Finding("exclamation", "info", excl[0], f"{len(excl)}行", "業務文書に感嘆符は使わない"))
@@ -360,7 +360,7 @@ def rules_typography(doc: Doc) -> list[Finding]:
     zp = count_matches(doc, ["，", "；", "“", "”"])
     if zp:
         f.append(Finding("nonstandard_punct", "info", zp[0][0], "".join(sorted({w for _, w in zp})),
-                         f"「，」「；」「“”」が{len(zp)}件。「、」「。」「」に統一（公用文流儀で「，」を使う場合は残す）"))
+                         f"「，」「；」「“”」が{len(zp)}件。「、」「。」「」に統一する（公用文の流儀で「，」を使う場合は残す）"))
     bad: dict[str, int] = {}
     for i, line in enumerate(doc.lines, 1):
         for ch in HAN_RE.findall(line):
@@ -372,7 +372,7 @@ def rules_typography(doc: Doc) -> list[Finding]:
                 bad[ch] = i
     if bad:
         f.append(Finding("non_jis_kanji", "warn", min(bad.values()), "".join(sorted(bad, key=bad.get)),
-                         f"cp932 に無い漢字が{len(bad)}種。簡体字の混入か JIS外の異体字。日本語の字形に直す（ja-surface.md §4）"))
+                         f"cp932 にない漢字が{len(bad)}種。簡体字の混入か JIS 外の異体字。日本語の文字に直す（ja-surface.md §5）"))
     tildes = {w for _, w in count_matches(doc, [r"(?<=\d)[〜～~](?=\d)"])}
     if len(tildes) >= 2:
         f.append(Finding("range_symbol_mixed", "info", 1, "".join(sorted(tildes)), "範囲記号が混在。「〜」に統一"))
@@ -483,7 +483,7 @@ def main() -> int:
     ap.add_argument("file", nargs="?", help="対象ファイル（Markdown／テキスト）")
     ap.add_argument("--json", action="store_true", help="JSON で出力")
     ap.add_argument("--baseline", help="前回の --json 出力。resolved/new/persisting を仕分ける")
-    ap.add_argument("--customer", action="store_true", help="顧客向け文書として敬語・語域の severity を上げる")
+    ap.add_argument("--customer", action="store_true", help="顧客向け文書として敬語・言葉遣いの severity を上げる")
     ap.add_argument("--hook", action="store_true", help="Claude Code PostToolUse フックとして動く")
     args = ap.parse_args()
     if args.hook:
