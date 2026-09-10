@@ -37,6 +37,8 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 完成した文章に対して、別コンテキスト（サブエージェント）でレビューを行う。詳細なプロンプトと出力形式は `references/review-protocol.md`。要点は次の通り。
 
+**モデル方針（必須）**：レビューのサブエージェントは、セッションのモデルを継承しない。プラグイン同梱のレビュアー（`ja-output-quality:reviewer`、`ja-output-quality:lane-a`、`lane-b`、`lane-c`）は Sonnet 5・effort max に固定してあるので、これを `subagent_type` に指定して起動する。同梱エージェントが見えない環境（claude.ai の Cowork、zip 版スキルだけの Web セッション）では、Agent ツールに `model: "sonnet"` を明示し、`references/review-protocol.md` のプロンプトを渡す。モデル指定なしで起動しない。書き手（親）はセッションのモデルのままでよい。
+
 **Lane 0 機械検出（決定的）**
 - 主：natural-japanese の `scripts/lint.py --json`（uv 環境。常套句・翻訳調・体言止め率・段落構造・語彙多様性）。
 - 補：本スキルの `scripts/ja_lint.py --json <file>`（標準ライブラリのみ。敬語・工程叙述・語尾の確信度均し・制約のない「できる」・幅のない数値・未確認事項の標識・字形）。uv が使えない環境ではこちらだけで回す。
@@ -65,8 +67,8 @@ argument-hint: "[quick|full] [review|write] <対象ファイルや文章>"
 
 ## 3. 実行モード
 
-- **quick（既定）**：Lane 0 ＋ サブエージェント1体（A・B・C を節分けで一括）＋ 1ラウンド。チャット回答・メール・社内メモ。追加時間は1〜2分。
-- **full**：Lane 0 ＋ 並列サブエージェント3体 ＋ 2ラウンド。顧客に渡す資料、経営向け、対外文書、1万字超。開始時に所要時間（5〜15分）をユーザーに一言伝える。
+- **quick（既定）**：Lane 0 ＋ `ja-output-quality:reviewer` 1体（A・B・C を節分けで一括、Sonnet 5）＋ 1ラウンド。チャット回答・メール・社内メモ。追加時間は1〜2分。
+- **full**：Lane 0 ＋ `ja-output-quality:lane-a` `lane-b` `lane-c` の並列3体（Sonnet 5）＋ 2ラウンド（第2ラウンドも新しいエージェントを起動する）。顧客に渡す資料、経営向け、対外文書、1万字超。開始時に所要時間（5〜15分）をユーザーに一言伝える。
 - 迷ったら quick で仕上げて「full で磨き直せる」と添える。full と決めたら短い文書でも工程を省かない。
 
 呼び出し例：`/ja-output-quality full review 回答案.md`、`/ja-output-quality write 顧客向けの回答を作る`（write は1章の憲法で書き、完成後に自動で review へ進む）。

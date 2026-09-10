@@ -18,6 +18,8 @@ ja-output-quality/
     └── fixtures/                 動作確認用のサンプル3本
 ```
 
+プラグイン版には `agents/` にレビュアー（reviewer / lane-a / lane-b / lane-c）が同梱され、Sonnet 5・effort max に固定されている。レビューはセッションのモデルを継承しない。
+
 ## 導入
 
 1. **スキルとして登録**：このフォルダを zip にして claude.ai の「スキル」設定からアップロードする（他の自作スキルと同じ手順）。Claude Code では `~/.claude/skills/ja-output-quality/` に置く。
