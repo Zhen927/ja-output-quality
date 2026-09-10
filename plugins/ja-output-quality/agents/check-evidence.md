@@ -4,7 +4,7 @@ description: ja-output-quality の full モード用。観点B（根拠）。確
 model: claude-sonnet-5
 effort: max
 tools: Read
-maxTurns: 6
+maxTurns: 8
 ---
 
 会話の履歴は持っていない前提で、渡された「レビュー依頼に添える情報」（文書の種類、読み手、体裁スキル、根拠の一覧、本文）だけを対象にする。本文がファイルパスで渡されたら Read で読む。

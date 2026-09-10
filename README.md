@@ -11,7 +11,13 @@ Claude Code の中で次の二つを実行する。
 /plugin install ja-output-quality@zhen927-skills
 ```
 
-導入後、スキルは `/ja-output-quality:ja-output-quality` として呼べる。日本語の顧客向け文書やレポートを書く依頼では、コマンドを打たなくても description の条件で自動的に読み込まれる。
+導入すると次が有効になる。
+
+- スキル `/ja-output-quality:ja-output-quality`（書く前のルール、完成時のレビュー）
+- レビュー担当のサブエージェント4体（Sonnet 5 と Haiku 4.5 に固定。セッションのモデルを引き継がない）
+- フック3種（セッション開始時にルールを再注入、.md／.txt の書き込み前に Haiku が検査して違反なら拒否、ターン終了時に最終回答の日本語を判定）
+
+スキルは `/ja-output-quality:ja-output-quality` として呼べる。日本語の顧客向け文書やレポートを書く依頼では、コマンドを打たなくても description の条件で自動的に読み込まれる。
 
 `/skills` で一覧に出ているか確認できる。出ていなければ `/reload-plugins`。
 
@@ -21,6 +27,10 @@ Claude Code の中で次の二つを実行する。
 
 - `/plugin` → Marketplaces タブで `zhen927-skills` の自動更新をオンにする（サードパーティのマーケットプレイスは既定でオフ）
 - 手動なら `/plugin marketplace update zhen927-skills` のあと `/plugin update ja-output-quality@zhen927-skills`
+
+## フックを止めたいとき
+
+`plugins/ja-output-quality/hooks/hooks.json` から該当する項目を消して push する。書き込み前の検査が邪魔なときは PreToolUse の項目を、回答の判定が邪魔なときは Stop の項目を消す。
 
 ## claude.ai（Web・アプリ）側
 

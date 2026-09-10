@@ -18,14 +18,17 @@ ja-output-quality/
     └── fixtures/                 動作確認用のサンプル3本
 ```
 
-プラグイン版には `agents/` にレビュー担当（reviewer、check-sentences、check-evidence、check-wording）が同梱され、Sonnet 5、effort max に固定されている。レビューはセッションのモデルを引き継がない。
+プラグイン版には、次の二つが同梱されている。
+
+- `agents/`: レビュー担当4体（reviewer と check-sentences、check-evidence は Sonnet 5、check-wording は Haiku 4.5）。レビューはセッションのモデルを引き継がない。
+- `hooks/hooks.json`: 三つの仕組み。セッション開始時にルールを再注入する、.md／.txt の書き込み前に Haiku が検査して違反なら拒否する、ターン終了時に最終回答の日本語を Haiku が判定する。
 
 ## 導入
 
 1. **スキルとして登録**：このフォルダを zip にして claude.ai の「スキル」設定からアップロードする（他の自作スキルと同じ手順）。Claude Code では、プラグインのマーケットプレイス経由で入れる（リポジトリの README を参照）。
-2. **常に効かせるルールを貼る**：`assets/global-rules.md` の内容を `~/.claude/CLAUDE.md` と claude.ai の個人設定に貼る。スキルが起動しない短い回答にも効く。
+2. **常に効かせるルール**：プラグイン版は SessionStart フックが `assets/global-rules.md` を自動で注入する。claude.ai 側は同じ内容を個人設定に貼る。
 3. **他スキルに追記する**：`assets/integration.md` の文面を customer-qa-style、natural-japanese、japanese-tech-writing、その他日本語の成果物を出すスキルに追記する。
-4. **（任意）フック**：Claude Code で Markdown を書くたびに `ja_lint.py --hook` を回す設定を `assets/integration.md` のとおりに入れる。
+4. **（任意）機械チェックのフック**：python3 がある環境では、Markdown を書くたびに `ja_lint.py --hook` を回す設定を `assets/integration.md` のとおりに入れる。
 
 ## 使い方
 
@@ -51,5 +54,7 @@ python3 ja_lint.py fixtures/report-natural.md                # 出ない
 - 書いた本人は自分の文を審査できない。レビューは別コンテキストで、書き直しの権限を与えずに行い、書き手が決まった直し方で直す。
 - 主張の強さは根拠に合わせる。予防線（弱すぎ）と言い過ぎ（強すぎ）は同じ直し方（結果＋条件＋確認していない範囲）で直る。
 - 最初から日本語で書く。英語で考えてから訳さない。直訳の造語を作らない。
+- ルールは書くだけでは守られない。セッション開始時に再注入し、書き込み前に別のモデルが門番として検査し、違反なら拒否する。
+- 読みやすさの判定は、書き手と同じ系統の強いモデルより、別の弱いモデル（Haiku）が向く。自分の直訳を「馴染んだ文」として見過ごさないため。内容の判定は Sonnet 5 に任せる。
 - natural-japanese の lint.py が主、ja_lint.py はそれにない敬語、作業報告の混入、確信度、条件のない「できる」、文字種を補う。
 - 同じ指摘が3文書以上で繰り返されたら、検出ルールではなく書く前のルール（体裁スキルの実例）に格上げする。

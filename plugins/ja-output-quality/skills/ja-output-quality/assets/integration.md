@@ -44,13 +44,21 @@
 本文は ja-output-quality の10か条（結論先行、根拠との釣り合い、作業報告の排除、一文に役割一つ、確度の書き分け、数値の条件と幅、最初から日本語で書く、厚みの差、飾りの抑制、言葉遣い）に従って書く。顧客や経営層に渡す成果物は、書き終えたら ja-output-quality のレビュー（quick）を通し、観点B の不合格が残る状態で出さない。
 ```
 
-## CLAUDE.md（Claude Code）と claude.ai の個人設定
+## claude.ai の個人設定（Cowork、Web セッションの zip 版）
 
-`assets/global-rules.md` の内容を貼る。スキルが起動しない短い回答にも効く。
+プラグイン版は SessionStart フックで `assets/global-rules.md` を自動で注入するので、Claude Code 側で CLAUDE.md に貼る必要はない。claude.ai にはフックがないため、同じ内容を個人設定（プロフィール、「Claude にどう応答してほしいか」）かプロジェクトの指示に貼る。
 
-## 任意：Claude Code のフック（ローカルだけ）
+## プラグインに同梱しているフック（`hooks/hooks.json`）
 
-Markdown を書き出すたびに機械チェックを自動で回す。`~/.claude/settings.json` に追記（パスは環境に合わせる。update-config スキルで設定してもよい）：
+- **SessionStart**（startup、resume、clear、compact）: `assets/global-rules.md` をそのまま注入する。
+- **PreToolUse**（.md／.txt への Write／Edit）: プロンプト型フック（Haiku）が書き込む内容を検査し、違反があれば書き込みを拒否して理由を返す。書き手は同じターンで直して書き直す。
+- **Stop**: 最終回答に200字以上の日本語があれば、直訳調と読みにくさを Haiku が判定し、不合格なら書き直させる。`stop_hook_active` が true のときは通すので、差し戻しは1回で止まる。
+
+止めたいときは、プラグインの `hooks/hooks.json` から該当する項目を消す（マーケットプレイスから入れた場合は `~/.claude/plugins/marketplaces/zhen927-skills/plugins/ja-output-quality/hooks/hooks.json`。更新で元に戻るので、恒久的に外すならリポジトリ側で消す）。
+
+## 任意：機械チェックのフック（ローカルだけ、python3 がある環境）
+
+Markdown を書き出すたびに `ja_lint.py` を回す。`~/.claude/settings.json` に追記（パスは環境に合わせる）：
 
 ```json
 {
@@ -61,7 +69,7 @@ Markdown を書き出すたびに機械チェックを自動で回す。`~/.clau
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/skills/ja-output-quality/scripts/ja_lint.py --hook"
+            "command": "python3 ~/.claude/plugins/marketplaces/zhen927-skills/plugins/ja-output-quality/skills/ja-output-quality/scripts/ja_lint.py --hook"
           }
         ]
       }
@@ -70,4 +78,4 @@ Markdown を書き出すたびに機械チェックを自動で回す。`~/.clau
 }
 ```
 
-`--hook` モードは、標準入力のフック JSON から `tool_input.file_path` を読み、拡張子が `.md` のときだけ検査する。warn 以上の指摘があれば要約を stderr に出して exit 2 で返す（Claude に指摘が戻る）。なければ exit 0 で何も出さない。成果物以外の Markdown（メモ、ログ）にも反応するので、うるさければ matcher を外すか、対象フォルダで絞る。
+`--hook` モードは、標準入力のフック JSON から `tool_input.file_path` を読み、拡張子が `.md` のときだけ検査する。warn 以上の指摘があれば要約を stderr に出して exit 2 で返す。なければ exit 0 で何も出さない。
